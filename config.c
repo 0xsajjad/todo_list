@@ -24,31 +24,10 @@
  *
  * @path : path where config file is located
  */
-struct config_file * init_config(char* path)
+void init_config(struct config_file *config, char* path)
 {
-	struct config_file *desc ;
-
-	desc = malloc(sizeof(struct config_file));
-
-	if (!desc)
-		return NULL;
-
-	desc->path 			= path;
-	desc->config_exist 	= &file_exist;
-	desc->config_create = &create_file;
-	desc->config_read 	= &print_file;
-
-	return desc;
-}
-
-/*
- * close_config : de-allocate all the resources for config_file structure
- *
- * @ desc : descriptor pointer
- */
-
-void close_config(struct config_file* desc)
-{
-	if (desc)
-		free(desc);
+	config->path 			= path;
+	config->config_exist 	= &file_exist;
+	config->config_create 	= &create_file;
+	config->config_read 	= &print_file;
 }

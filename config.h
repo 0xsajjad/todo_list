@@ -19,11 +19,10 @@ struct config_file
 	char* path;
 
     bool (*config_exist) (char*);
-    STATUS (*config_create) (char*);
+    int (*config_create) (char*);
     void (*config_read) (char*);
 };
 
-struct config_file* init_config(char *);
-void close_config(struct config_file* config_file);
+void init_config(struct config_file *, char *);
 
 #endif /* CONFIG_H_ */
