@@ -3,13 +3,9 @@
 
 #include <stdbool.h>
 
-#include "types.h"
-
-STATUS create_file (char*);
+int  create_file (char* path);
 bool file_exist(char* path);
-void print_file (char* path);
-
-// Get value for a variable from a file
-char* get_value (char* path, const char* variable);
+int print_file (char* path);
+int get_value (char* file_path, const char* search, char* output);
 
 #endif /* FILEOPERATIONS_H_ */

@@ -22,6 +22,7 @@
  *                  - config_exist()
  *                  - config_create()
  *
+ * @config: config_file struct variable
  * @path : path where config file is located
  */
 void init_config(struct config_file *config, char* path)

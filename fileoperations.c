@@ -1,27 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "fileoperations.h"
+
+extern const int max_str_len;
 
 /*
  * create_file : Create file
  *
  * @path : path where to create file
- *
- * return : SUCCESS, FAIL
+ * return 0 for success
  */
-STATUS create_file (char* path)
+int create_file (char* path)
 {
 	FILE *fptr;
 
-	if ((fptr = fopen(path, "w")))
-	{
-		fclose(fptr);
-		return SUCCESS;
-	}
+	fptr = fopen(path, "w");
+	if (!fptr)
+		return -EFAULT;
 
-	return  FAIL;
+	fclose(fptr);
+	return EXIT_SUCCESS;
 }
 
 /*
@@ -33,14 +34,12 @@ STATUS create_file (char* path)
 bool file_exist(char* path)
 {
 	FILE *fptr;
+    fptr = fopen(path, "r");
+    if (!fptr)
+		return -EFAULT;
 
-	if ((fptr = fopen(path, "r")))
-	{
-		fclose(fptr);
-		return true;
-	}
-
-	return false;
+    fclose(fptr);
+	return true;
 }
 
 /*
@@ -49,35 +48,46 @@ bool file_exist(char* path)
  * @path : path of the text file
  * @variable : variable who's value need to be searched
  */
-char* get_value (char* path, const char* variable)
+int get_value (char* file_path, const char* search, char* output)
 {
+	int ret = 0;
 	FILE *fptr;
-	const int max_str_len = 100;
 	char *str, *temp;
 
-	if (!(fptr = fopen(path, "r")))
-		return NULL;
+	fptr = fopen(file_path, "r");
+	if (!fptr)
+		return -EFAULT;
 
 	str = malloc(max_str_len);
 	temp = malloc(max_str_len);
 
-	while (fgets(str, max_str_len, fptr) != NULL)
+	do
 	{
-		if (strcmp(str, variable) > 0)
+		// if file cursor reach EOF without any match
+		if (!(fgets(str, max_str_len, fptr)))
 		{
-			strcpy(temp, &str[strlen(variable)]);
+			ret = EOF;
 			break;
 		}
+
+		else if (strcmp(str, search) > 0)
+		{
+			strcpy(temp, &str[strlen(search)]);
+			break;
+		}
+	}while (1);
+
+	if (ret != EOF)
+	{
+		bzero(output, strlen(output));
+		strncpy(output, temp, strlen(temp) - 1);
 	}
 
-	bzero(str, strlen(str));
-	strncpy(str, temp, strlen(temp) - 1);
-
 	free(temp);
+	free(str);
 	fclose(fptr);
 
-	return str;
-
+	return ret;
 }
 
 /*
@@ -86,25 +96,43 @@ char* get_value (char* path, const char* variable)
  * @path : path to file which need to be print
  *
  */
-void print_file (char* path)
+int print_file (char* path)
 {
 	char c;
 	FILE *fptr;
 
-	if ((fptr = fopen(path, "r")))
-	{
-		while (!feof(fptr))
+	fptr = fopen(path, "r");
+	if (!fptr)
+		return -EFAULT;
+
+	while (!feof(fptr))
 		{
 			c = fgetc(fptr);
 			fprintf(stdout, "%c", c);
 		}
-	}
-
-	else
-	{
-		fprintf(stderr, "can't open file to read, path: %s\n", path);
-		return;
-	}
 
 	fclose(fptr);
+	return EXIT_SUCCESS;
+}
+
+/*
+ * append_file : add new data at the end of the file
+ *
+ * @fptr : file pointer
+ * @string : data to be added
+ */
+int append_file (char* file_path, char* string)
+{
+	int ret = 0;
+	FILE* fptr;
+
+	fptr = fopen(file_path, "a");
+	if (!fptr)
+		return -EFAULT;
+
+	ret = fputs(string, fptr);
+	if (ret == EOF)
+		return EOF;
+
+	return EXIT_SUCCESS;
 }
